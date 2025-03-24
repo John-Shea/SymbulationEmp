@@ -5,6 +5,7 @@
 #include "CPUState.h"
 #include <atomic>
 #include <string>
+#include "../sgp_mode/SGPWorld.h"
 
 class Task {
   bool unlimited = true;
@@ -116,28 +117,66 @@ class TaskSet {
 
   float MarkPerformedTask(CPUState &state, uint32_t output, size_t task_id,
                           bool shared, float score) {
+
+    // should be host...
     if (state.tasks_performed->Get(task_id)){
       //Half points if they did the task before, pushing them to do more tasks instead of cycling
       score = score/2.0;
     }
     if (state.organism->IsHost()){
       score = state.world.Cast<SymWorld>()->PullResources(score);
-    }
-    if (score == 0.0) {
-      return score;
-    }
+          }
+    // check mode 
+    if (sgp_config->ORGANISM_TYPE() == NUTRIENT) {
+        // check state
+        if (state.world->GetConfig()->STEAL_PENALTY()) {
+          // check free living host + if host 
+          if (state.organism->IsHost() || state.organism->GetHost() == nullptr){
+            // check task (ask are we incentivizing tasks still)
+            if (state.tasks_performed->Get(task_id)){
+              // score task
+              score = score / 2.0
+            }
+            if(state.organism->IsHost()){
+                // pull resources from world 
+                score = state.world.Cast<SymWorld>()->PullResources(score);
+             }
+          }
+              // symbiont 
+              emp::Ptr<Organism> host = state.organism->GetHost();
+              // checking symbiont tasks after host perform task
+              if (!state.organism->IsHost()) {
+                // if tasks match
+                if (state.used_resources->Get(task_id)){
+                  // stealing logic 
+                  score = state.world.Cast<SymWorld>()->PullResource(score);
+                  double to_steal_from_nutrient_host = fmin(state.organism->GetPoints(), (state.organism->GetPoints() + host->GetPoints()) * 0.20); 
+                  // state.world->GetSymDonatedDataNode().WithMonitor([=](auto &m) { m.AddDatum(to_steal_from_nutrient_host); });
+                  host->AddPoints(to_steal_from_nutrient_host * (1.0 - state.organism->GetConfig()->STOLEN_RESOURCES()));
+                  state.organism->AddPoints(-to_steal_from_nutrient_host);
+                  // pull half from world too
+                  score = state.world.Cast<SymWorld>()->PullResources(score)
 
-    tasks[task_id]->MarkPerformed(state, output, task_id, shared);
-
-    if (state.organism->IsHost())
-      ++*n_succeeds_host[task_id];
-    else{
-      ++*n_succeeds_sym[task_id];
+                }
+                else {
+                  // resources from world 
+                  state.world.Cast<SymWorld>()->PullResources(score); 
+                  // TODO: resources to host 
+                  host->AddPoints(state.world.Cast<SymWorld>()->PullResources(score));    
     }
-      
-
-    return score;
   }
+  // Call MarkPerformed on the actual task
+  tasks[task_id]->MarkPerformed(state, output, task_id, shared);
+
+  // Increment the success count depending on whether the organism is a host or symbiont
+  if (state.organism->IsHost()) {
+    ++*n_succeeds_host[task_id];
+  } else {
+    ++*n_succeeds_sym[task_id];
+  }
+
+  return score;
+}
 
 public:
   /**
