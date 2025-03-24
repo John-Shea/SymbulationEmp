@@ -6,6 +6,7 @@
 #include "StressHost.h"
 #include "SGPSymbiont.h"
 #include "SGPWorld.h"
+#include "NutrientHost.h"
 
 void SGPWorld::SetupHosts(unsigned long *POP_SIZE) {
   for (size_t i = 0; i < *POP_SIZE; i++) {
@@ -21,6 +22,10 @@ void SGPWorld::SetupHosts(unsigned long *POP_SIZE) {
         break;
       case STRESS:
         new_org = emp::NewPtr<StressHost>(
+          &GetRandom(), this, sgp_config, CreateNotProgram(100), sgp_config->HOST_INT());
+        break;
+      case NUTRIENT:
+        new_org = emp::NewPtr<NutrientHost>(
           &GetRandom(), this, sgp_config, CreateNotProgram(100), sgp_config->HOST_INT());
         break;
       default:
