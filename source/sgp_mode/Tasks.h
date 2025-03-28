@@ -125,51 +125,29 @@ class TaskSet {
     }
     if (state.organism->IsHost()){
       score = state.world.Cast<SymWorld>()->PullResources(score);
-          }
+    }
     // check mode 
-    if (sgp_config->ORGANISM_TYPE() == NUTRIENT) {
-        // check state
-        if (state.world->GetConfig()->STEAL_PENALTY()) {
-          // check free living host + if host 
-          if (state.organism->IsHost() || state.organism->GetHost() == nullptr){
-            // check task (ask are we incentivizing tasks still)
-            if (state.tasks_performed->Get(task_id)){
-              // score task
-              score = score / 2.0
-            }
-            if(state.organism->IsHost()){
-                // pull resources from world 
-                score = state.world.Cast<SymWorld>()->PullResources(score);
-             }
-          }
-              // symbiont 
-              emp::Ptr<Organism> host = state.organism->GetHost();
-              // checking symbiont tasks after host perform task
-              if (!state.organism->IsHost()) {
-                // if tasks match
-                if (state.used_resources->Get(task_id)){
-                  // stealing logic 
-                  score = state.world.Cast<SymWorld>()->PullResource(score);
-                  double to_steal_from_nutrient_host = fmin(state.organism->GetPoints(), (state.organism->GetPoints() + host->GetPoints()) * 0.20); 
-                  // state.world->GetSymDonatedDataNode().WithMonitor([=](auto &m) { m.AddDatum(to_steal_from_nutrient_host); });
-                  host->AddPoints(to_steal_from_nutrient_host * (1.0 - state.organism->GetConfig()->STOLEN_RESOURCES()));
-                  state.organism->AddPoints(-to_steal_from_nutrient_host);
-                  // pull half from world too
-                  score = state.world.Cast<SymWorld>()->PullResources(score)
-
+    const auto& config = *(state.world->GetConfig());
+    if (config.ORGANISM_TYPE() == NUTRIENT) {
+      if (state.organism->IsHost()){
+        
                 }
                 else {
                   // resources from world 
                   state.world.Cast<SymWorld>()->PullResources(score); 
                   // TODO: resources to host 
-                  host->AddPoints(state.world.Cast<SymWorld>()->PullResources(score));    
+                  host->AddPoints(state.world.Cast<SymWorld>()->PullResources(score)); 
+
+                  // emp::Ptr<Organism> host = state.organism->GetHost();
+                  // host->AddPoints(score / 2.0); // Half of the resources go to the host
+                  // state.organism->AddPoints(score / 2.0);  
     }
   }
   // Call MarkPerformed on the actual task
   tasks[task_id]->MarkPerformed(state, output, task_id, shared);
 
   // Increment the success count depending on whether the organism is a host or symbiont
-  if (state.organism->IsHost()) {
+  if (state.organism->IsHost()) {4
     ++*n_succeeds_host[task_id];
   } else {
     ++*n_succeeds_sym[task_id];
