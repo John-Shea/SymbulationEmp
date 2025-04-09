@@ -3,8 +3,8 @@
 #include "../../Empirical/include/emp/config/config.hpp"
 #include "../ConfigSetup.h"
 
-enum SGPOrganismType {DEFAULT = 0, HEALTH, STRESS};
-enum StressSymbiontType { MUTUALIST = 0, PARASITE, NEUTRAL };
+enum SGPOrganismType {DEFAULT = 0, HEALTH, STRESS, NUTRIENT};
+enum StressSymbiontType { MUTUALIST = 0, PARASITE, NEUTRAL};
 
 EMP_EXTEND_CONFIG(SymConfigSGP, SymConfigBase,
   GROUP(SGP, "Complex Genomes Settings"),
@@ -28,6 +28,14 @@ EMP_EXTEND_CONFIG(SymConfigSGP, SymConfigBase,
   VALUE(PARASITE_DEATH_CHANCE, double, 0.5, "What death chance does a parasite confer?"),
   VALUE(MUTUALIST_DEATH_CHANCE, double, 0.125, "What death chance does a mutualist confer?"),
   VALUE(BASE_DEATH_CHANCE, double, 0.25, "What death chance does a host have in the absence of symbionts?")
+
+  GROUP(NUTRIENT, "Nutrient Settings"),
+  VALUE(NUTRIENT_TYPE, size_t, MUTUALIST, "What kind of stress symbionts should be incorporated in stressful environments? (0 for mutualists, 1 for parasites, 2 for neutrals"),
+  VALUE(EXTINCTION_FREQUENCY, size_t, 2000, "How often should extinction events occur (in updates)?"),
+  VALUE(PARASITE_DEATH_CHANCE, double, 0.5, "What death chance does a parasite confer?"),
+  VALUE(MUTUALIST_DEATH_CHANCE, double, 0.125, "What death chance does a mutualist confer?"),
+  VALUE(BASE_DEATH_CHANCE, double, 0.25, "What death chance does a host have in the absence of symbionts?"),
+  VALU(NUTRIENT_SYM_MATCHTASK_STOLEN, double, 0.5, "What percentage of resources will be stolen if the symbiont performs the same task as the host?")
 )
 
 #endif
