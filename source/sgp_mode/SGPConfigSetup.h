@@ -35,7 +35,7 @@ EMP_EXTEND_CONFIG(SymConfigSGP, SymConfigBase,
   VALUE(PARASITE_DEATH_CHANCE, double, 0.5, "What death chance does a parasite confer?"),
   VALUE(MUTUALIST_DEATH_CHANCE, double, 0.125, "What death chance does a mutualist confer?"),
   VALUE(BASE_DEATH_CHANCE, double, 0.25, "What death chance does a host have in the absence of symbionts?"),
-  VALU(NUTRIENT_SYM_MATCHTASK_STOLEN, double, 0.5, "What percentage of resources will be stolen if the symbiont performs the same task as the host?")
+  VALUE(NUTRIENT_SYM_MATCHTASK_STOLEN, double, 0.5, "What percentage of resources will be stolen if the symbiont performs the same task as the host?")
 )
 
 #endif
